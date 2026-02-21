@@ -4,6 +4,7 @@ from typing import Callable
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 from ctypes import CDLL
+import fib_rs as fibrs
 
 
 app = FastAPI()
@@ -30,6 +31,10 @@ def fib_c(n: int) -> int:
     return fib_c_lib.fib(n)
 
 
+def fib_rs(n: int) -> int:
+    return fibrs.fib(n)
+
+
 @app.post("/fibonacci/python", response_model=FibonacciResponse)
 def compute_fibonacci(payload: FibonacciRequest):
     return execute_and_measure(fib_py, payload.n)
@@ -38,6 +43,11 @@ def compute_fibonacci(payload: FibonacciRequest):
 @app.post("/fibonacci/c", response_model=FibonacciResponse)
 def compute_fibonacci(payload: FibonacciRequest):
     return execute_and_measure(fib_c, payload.n)
+
+
+@app.post("/fibonacci/rust", response_model=FibonacciResponse)
+def compute_fibonacci(payload: FibonacciRequest):
+    return execute_and_measure(fib_rs, payload.n)
 
 
 def execute_and_measure(func: Callable[[int], int], n: int) -> FibonacciResponse:
